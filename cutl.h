@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 
-#define CUTL_VERSION    "3.0"
+#define CUTL_VERSION    "3.1"
 
 
 // The following methods MUST be implemented in the test file
@@ -410,7 +410,7 @@ void _CUTL_REPORT_TEST_RESULT() {
                                             \
         _cutl_test_status = _CUTL_SUCCESS;  \
                                             \
-        func(##__VA_ARGS__);                \
+        func(__VA_ARGS__);                \
                                             \
         _CUTL_REPORT_TEST_RESULT();         \
                                             \

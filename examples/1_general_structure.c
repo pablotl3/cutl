@@ -17,7 +17,7 @@ void CUTL_AFTER_EACH()  {}
 
 /* Test functions declaration */
 static void test_1();
-static void test_2();
+static void test_2(int foo, int bar);
 
 
 
@@ -25,7 +25,7 @@ int main() {
     CUTL_BEGIN_TEST();
 
     CUTL_TEST_FUNCTION(test_1);
-    CUTL_TEST_FUNCTION(test_2);
+    CUTL_TEST_FUNCTION(test_2, 33, 95);
 
     CUTL_END_TEST();
 
@@ -43,6 +43,7 @@ void test_1() {
 /**
  * Test function 2
  */
-void test_2() {
+void test_2(int foo, int bar) {
+    foo = (foo + bar);
     return;
 }

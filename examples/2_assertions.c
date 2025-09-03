@@ -1,19 +1,19 @@
 /**
  * Demonstration of how to use CutL assertions
  *
- * Date:    2025-09-02
- * Version: 1.0
+ * Date:    2025-09-03
+ * Version: 2.0
  */
-#define TEST_IMPLEMENTATION
+#define CUTL_NO_PREFIXED_ASSERTIONS
 #include <cutl.h>
 
 
 /* Special functions to run before or after the test functions
  * are called */
-void before_all() {}
-void after_all() {}
-void before_each() {}
-void after_each() {}
+void CUTL_BEFORE_ALL()  {}
+void CUTL_AFTER_ALL()   {}
+void CUTL_BEFORE_EACH() {}
+void CUTL_AFTER_EACH()  {}
 
 
 /* Test functions declaration */
@@ -24,15 +24,15 @@ static void test_assertion_failure();
 
 
 int main() {
-    BEGIN_TEST();
+    CUTL_BEGIN_TEST();
 
-    TEST_FUNCTION(test_general_assertions_success);
-    TEST_FUNCTION(test_typed_assertions_success);
-    TEST_FUNCTION(test_assertion_failure);
+    CUTL_TEST_FUNCTION(test_general_assertions_success);
+    CUTL_TEST_FUNCTION(test_typed_assertions_success);
+    CUTL_TEST_FUNCTION(test_assertion_failure);
 
-    END_TEST();
+    CUTL_END_TEST();
 
-    return 0;
+    return cutl_failed();
 }
 
 
@@ -64,13 +64,15 @@ void test_general_assertions_success() {
  * desired type.
  */
 void test_typed_assertions_success() {
-    int    i[] = { 100, 200 };
-    float  f[] = { 3.14, 2.71 };
-    double d[] = { 3.14, 2.71};
-    bool   b[] = { true, false };
-    char*  str[] = { "Hi", "Bye" };
-    void*  ptr[] = { &str[0], &str[1] };
+    unsigned int u[] = { 100, 200 };
+    long         i[] = { -100000000, 200 };
+    float        f[] = { 3.14, 2.71 };
+    double       d[] = { 3.14, 2.71};
+    bool         b[] = { true, false };
+    char*        str[] = { "Hi", "Bye" };
+    void*        ptr[] = { &str[0], &str[1] };
 
+    ASSERT_EQ_UINT(   u[0],   u[0]);
     ASSERT_EQ_INT(    i[0],   i[0]);
     ASSERT_EQ_FLOAT(  f[0],   f[0]);
     ASSERT_EQ_DOUBLE( d[0],   d[0]);
@@ -78,7 +80,7 @@ void test_typed_assertions_success() {
     ASSERT_EQ_STR(    str[0], str[0]);
     ASSERT_EQ_PTR(    ptr[0], ptr[0]);
 
-
+    ASSERT_NEQ_UINT(   u[0],   u[1]);
     ASSERT_NEQ_INT(    i[0],   i[1]);
     ASSERT_NEQ_FLOAT(  f[0],   f[1]);
     ASSERT_NEQ_DOUBLE( d[0],   d[1]);

@@ -1,19 +1,18 @@
 /**
  * General structure of a test program using CutL
  *
- * Date:    2025-09-02
- * Version: 1.0
+ * Date:    2025-09-03
+ * Version: 2.0
  */
-#define TEST_IMPLEMENTATION
 #include <cutl.h>
 
 
 /* Special functions to run before or after the test functions
  * are called */
-void before_all() {}
-void after_all() {}
-void before_each() {}
-void after_each() {}
+void CUTL_BEFORE_ALL()  {}
+void CUTL_AFTER_ALL()   {}
+void CUTL_BEFORE_EACH() {}
+void CUTL_AFTER_EACH()  {}
 
 
 /* Test functions declaration */
@@ -23,14 +22,14 @@ static void test_2();
 
 
 int main() {
-    BEGIN_TEST();
+    CUTL_BEGIN_TEST();
 
-    TEST_FUNCTION(test_1);
-    TEST_FUNCTION(test_2);
+    CUTL_TEST_FUNCTION(test_1);
+    CUTL_TEST_FUNCTION(test_2);
 
-    END_TEST();
+    CUTL_END_TEST();
 
-    return 0;
+    return cutl_failed();
 }
 
 

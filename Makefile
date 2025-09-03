@@ -9,14 +9,10 @@ SRC = $(wildcard $(SRC_DIR)/*.c)
 BIN = $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%,$(SRC))
 
 
-
 .PHONY: all clean
 
 
-all:
-	@echo "Hello"
-	$(foreach b,$(BIN),$(MAKE) $(b))
-
+all: $(BIN)
 
 
 $(BIN_DIR)/%: $(SRC_DIR)/%.c

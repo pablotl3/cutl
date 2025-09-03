@@ -1,102 +1,328 @@
 /**
  * Simple framework for tests
- * Author: pablotl3
+ * Author: @pablotl3 (GitHub)
  * Date:   21 november 2024
  * Version: 2.0
  */
-#ifndef TESTS_H
-#define TESTS_H
+#ifndef CUTL_H
+#define CUTL_H
 
-#if defined (TEST_IMPLEMENTATION)
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-#define ANSI_RESET "\033[0m"
-#define ANSI_RED   "\033[31m"
-#define ANSI_GREEN "\033[32m"
-#define ANSI_BLUE  "\033[34m"
 
-#define RGB_SUCCESS ANSI_GREEN
-#define RGB_FAILURE ANSI_RED
-#define RGB_INFO    ANSI_RESET
-#define RGB_DEBUG   ANSI_BLUE
-#define RGB_ERROR   ANSI_RED
+#define CUTL_VERSION    "3.0"
 
 
-// Methods that must be implemented in the test file
+// The following methods MUST be implemented in the test file
+// ----------------------------------------------------------
 
-static void before_all();
-static void after_all();
-static void before_each();
-static void after_each();
-
-
-#define _MAX_LEN_FUNC 128
-#define _MAX_LEN_MSG  256
-
-static unsigned int _count_passed;
-static unsigned int _count_failed;
-
-static bool _test_passed;
-static char _failed_func[_MAX_LEN_FUNC];
-static int  _failed_line;
-static char _failure_msg[_MAX_LEN_MSG];
+static void CUTL_BEFORE_ALL();  // Executes when BEGIN_TEST is called
+static void CUTL_AFTER_ALL();   // Executes when END_TEST is called
+static void CUTL_BEFORE_EACH(); // Executes before each test
+static void CUTL_AFTER_EACH();  // Executes after each test
 
 
-// ==========================================================================
-// PRINT MACROS
-// ==========================================================================
+// Other CutL functions
+// --------------------
 
-/**
- * Prints success message in green ending with new line
- */
-#define _SUCCESS(msg, ...) \
-    printf(RGB_SUCCESS "====[PASSED]==== " msg ANSI_RESET "\n", ##__VA_ARGS__)
+static int  cutl_failed();       // Returns the number of failed tests
 
 
-/**
- * Prints failure message in red ending with new line
- */
-#define _FAILURE(msg, ...) \
-    printf(RGB_FAILURE "====[FAILED]==== " msg ANSI_RESET "\n", ##__VA_ARGS__)
+// CutL macros
+// -----------
+
+// macro  CUTL_BEGIN_TEST()
+// macro  CUTL_END_TEST()
+// macro  CUTL_TEST_FUNCTION(func, ...)
+
+// macro  CUTL_REPORT_ERROR(msg)
 
 
-/**
- * Prints a debug message in blue ending with new line
- */
-#define _INFO(msg, ...) \
-    printf(RGB_INFO "=====[INFO]===== " msg ANSI_RESET "\n", ##__VA_ARGS__)
+// CutL assertions
+// ---------------
 
+/* NOTE: By default they come with the CUTL prefix, but it can be
+ * removed from the macro names by defining CUTL_NO_PREFIXED_ASSERTIONS
+ * before including this header file */
 
-/**
- * Prints a debug message in blue ending with new line
- */
-#define _DEBUG(msg, ...) \
-    printf(RGB_DEBUG "====[DEBUG]====  " msg ANSI_RESET "\n", ##__VA_ARGS__)
+// macro  ASSERT(expr)
+// macro  ASSERT_EQ(v1, v2)
+// macro  ASSERT_NEQ(v1, v2)
+// macro  ASSERT_NULL(v1)
+// macro  ASSERT_NOT_NULL(v1)
 
+// macro  ASSERT_EQ_UINT(v1, v2)
+// macro  ASSERT_EQ_INT(v1, v2)
+// macro  ASSERT_EQ_FLOAT(v1, v2)
+// macro  ASSERT_EQ_DOUBLE(v1, v2)
+// macro  ASSERT_EQ_BOOL(v1, v2)
+// macro  ASSERT_EQ_CHAR(v1, v2)
+// macro  ASSERT_EQ_STR(v1, v2)
+// macro  ASSERT_EQ_PTR(v1, v2)
 
-/**
- * Prints a debug message in blue ending with new line
- */
-#define _ERROR(msg, ...) \
-    printf(RGB_ERROR "====[ERROR]====  " msg ANSI_RESET "\n", ##__VA_ARGS__)
+// macro  ASSERT_NEQ_UINT(v1, v2)
+// macro  ASSERT_NEQ_INT(v1, v2)
+// macro  ASSERT_NEQ_FLOAT(v1, v2)
+// macro  ASSERT_NEQ_DOUBLE(v1, v2)
+// macro  ASSERT_NEQ_BOOL(v1, v2)
+// macro  ASSERT_NEQ_CHAR(v1, v2)
+// macro  ASSERT_NEQ_STR(v1, v2)
+// macro  ASSERT_NEQ_PTR(v1, v2)
 
 
 
 // ==========================================================================
-// LIBRARY UTILS
+// Private globals and constants
 // ==========================================================================
 
-void _REGISTER_FAILURE(const char *func, const int line, const char *msg)
-{
-    _test_passed = false;
-    strncpy(_failed_func, func, _MAX_LEN_FUNC);
-    strncpy(_failure_msg, msg, _MAX_LEN_MSG);
-    _failed_line = line;
+
+// CutL states
+
+#define _CUTL_SUCCESS 0
+#define _CUTL_FAILURE 1
+#define _CUTL_ERROR   2
+
+// Control of test failures
+
+#define _CUTL_MAX_LEN_FUNC_NAME 128
+#define _CUTL_MAX_LEN_MSG       256
+
+
+static char *_cutl_current_file = NULL;    // Name of the file being tested
+static char *_cutl_current_func = NULL;    // Name of the function being tested
+static int   _cutl_current_line = -1;      // Line in the file where the function being tested was called
+
+static unsigned int _cutl_n_tests_passed;   // Number of tests passed
+static unsigned int _cutl_n_tests_failed;   // Number of tests failed
+
+static int  _cutl_test_status;
+static int  _cutl_failure_line;
+static char _cutl_failure_msg[_CUTL_MAX_LEN_MSG];
+
+// Logging and report settings
+static FILE *_cutl_report_file = NULL;
+
+
+
+
+// ==========================================================================
+// Private functions declarations
+// ==========================================================================
+
+static void _CUTL_REPORT_SUCCESS(const char *msg, ...);
+static void _CUTL_REPORT_FAILURE(const char *msg, ...);
+static void _CUTL_REPORT_INFO(const char *msg, ...);
+static void _CUTL_REPORT_DEBUG(const char *msg, ...);
+static void _CUTL_REPORT_ERROR(const char *msg, ...);
+
+
+static void _CUTL_REGISTER_TEST_FAILURE(const int line, const char *msg);
+static void _CUTL_REGISTER_TEST_ERROR(const int line, const char *msg);
+
+static void _CUTL_REPORT_TEST_RESULT(void);
+
+
+
+
+// ==========================================================================
+// REPORTS
+// ==========================================================================
+
+
+#define _CUTL_ANSI_RESET "\033[0m"
+#define _CUTL_ANSI_RED   "\033[31m"
+#define _CUTL_ANSI_GREEN "\033[32m"
+#define _CUTL_ANSI_BLUE  "\033[34m"
+
+#define _CUTL_RGB_SUCCESS _CUTL_ANSI_GREEN
+#define _CUTL_RGB_FAILURE _CUTL_ANSI_RED
+#define _CUTL_RGB_INFO    _CUTL_ANSI_RESET
+#define _CUTL_RGB_DEBUG   _CUTL_ANSI_BLUE
+#define _CUTL_RGB_ERROR   _CUTL_ANSI_RED
+
+
+
+/**
+ * Reports successfull test
+ */
+void _CUTL_REPORT_SUCCESS(const char *format, ...) {
+    va_list args;
+
+    va_start(args, format);
+
+    if (_cutl_report_file == stdout) {
+        fprintf(_cutl_report_file, _CUTL_RGB_SUCCESS "====[PASSED]==== ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, _CUTL_ANSI_RESET "\n");
+    }
+    else {
+        fprintf(_cutl_report_file, "====[PASSED]==== ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, "\n");
+    }
+
+    va_end(args);
+}
+
+
+/**
+ * Reports failed test
+ */
+void _CUTL_REPORT_FAILURE(const char *format, ...) {
+    va_list args;
+
+    va_start(args, format);
+
+    if (_cutl_report_file == stdout) {
+        fprintf(_cutl_report_file, _CUTL_RGB_FAILURE "====[FAILED]==== ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, _CUTL_ANSI_RESET "\n");
+    }
+    else {
+        fprintf(_cutl_report_file, "====[FAILED]==== ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, "\n");
+    }
+
+    va_end(args);
+}
+
+
+/**
+ * Reports some information
+ */
+void _CUTL_REPORT_INFO(const char *format, ...) {
+    va_list args;
+
+    va_start(args, format);
+
+    if (_cutl_report_file == stdout) {
+        fprintf(_cutl_report_file, _CUTL_RGB_INFO "=====[INFO]===== ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, _CUTL_ANSI_RESET "\n");
+    }
+    else {
+        fprintf(_cutl_report_file, "=====[INFO]===== ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, "\n");
+    }
+
+    va_end(args);
+}
+
+
+/**
+ * Reports some debug information
+ */
+void _CUTL_REPORT_DEBUG(const char *format, ...) {
+    va_list args;
+
+    va_start(args, format);
+
+    if (_cutl_report_file == stdout) {
+        fprintf(_cutl_report_file, _CUTL_RGB_DEBUG "====[DEBUG]====  ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, _CUTL_ANSI_RESET "\n");
+    }
+    else {
+        fprintf(_cutl_report_file, "====[DEBUG]====  ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, "\n");
+    }
+
+    va_end(args);
+}
+
+
+/**
+ * Reports an unexpected error (not test failure)
+ */
+void _CUTL_REPORT_ERROR(const char *format, ...) {
+    va_list args;
+
+    va_start(args, format);
+
+    if (_cutl_report_file == stdout) {
+        fprintf(_cutl_report_file, _CUTL_RGB_ERROR "====[ERROR]====  ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, _CUTL_ANSI_RESET "\n");
+    }
+    else {
+        fprintf(_cutl_report_file, "====[ERROR]====  ");
+        vfprintf(_cutl_report_file, format, args);
+        fprintf(_cutl_report_file, "\n");
+    }
+
+    va_end(args);
+}
+
+
+
+// ==========================================================================
+// MANAGING TESTS RESULTS
+// ==========================================================================
+
+
+/**
+ * Registers a test failure, but does not handle it
+ */
+void _CUTL_REGISTER_TEST_FAILURE(const int line, const char *msg) {
+    _cutl_test_status = _CUTL_FAILURE;
+    _cutl_failure_line = line;
+    strncpy(_cutl_failure_msg, msg, _CUTL_MAX_LEN_MSG);
+}
+
+
+/**
+ * Registers a test error
+ */
+void _CUTL_REGISTER_TEST_ERROR(const int line, const char *msg) {
+    _cutl_test_status = _CUTL_ERROR;
+    _cutl_failure_line = line;
+    strncpy(_cutl_failure_msg, msg, _CUTL_MAX_LEN_MSG);
+}
+
+
+/**
+ * Reports whether if the last test run failed or was successful
+ */
+void _CUTL_REPORT_TEST_RESULT() {
+    switch (_cutl_test_status) {
+        case _CUTL_SUCCESS:
+            _cutl_n_tests_passed++;
+            _CUTL_REPORT_SUCCESS("%s l:%d (%s)",
+                _cutl_current_file, _cutl_current_line, _cutl_current_func
+            );
+
+            break;
+
+        case _CUTL_FAILURE:
+            _cutl_n_tests_failed++;
+            _CUTL_REPORT_FAILURE("%s l:%d (%s)\n\tFailure in line %d: %s",
+                _cutl_current_file, _cutl_current_line, _cutl_current_func,
+                _cutl_failure_line, _cutl_failure_msg
+            );
+
+            break;
+
+        case _CUTL_ERROR:
+            _cutl_n_tests_failed++;
+            _CUTL_REPORT_ERROR("%s l:%d (%s)\n\tError in line %d: %s",
+                _cutl_current_file, _cutl_current_line, _cutl_current_func,
+                _cutl_failure_line, _cutl_failure_msg
+            );
+
+            break;
+
+        default:
+            break;
+    }
 }
 
 
@@ -116,181 +342,282 @@ void _REGISTER_FAILURE(const char *func, const int line, const char *msg)
     } while (0)
 
 
-// Test results
-
-void _REPORT_TEST_RESULT(const char *file, const int line, const char *func)
-{
-    if (_test_passed)
-    {
-        _count_passed++;
-        _SUCCESS("%s l:%d (%s)", file, line, func);
-    }
-    else
-    {
-        _count_failed++;
-        _FAILURE("%s l:%d (%s)\n\tError in line %d: %s", file, line, func, _failed_line, _failure_msg);
-    }
-}
-
 
 
 // ==========================================================================
 // MACROS FOR TESTING
 // ==========================================================================
 
-#define BEGIN_TEST() \
-    _count_passed = 0; \
-    _count_failed = 0; \
-    printf("\n"); \
-    _INFO("Testing %s", __FILE__); \
-    before_all()
 
-#define END_TEST() \
-    after_all(); \
-    _INFO("Tests passed: %u / %u", _count_passed, _count_passed + _count_failed)
-
-
-#define TEST_FUNCTION(func, ...) \
+/**
+ * Begins the testing mode
+ */
+#define CUTL_BEGIN_TEST() \
     do { \
-        const char *__file = __FILE__; int __line = __LINE__; \
-        before_each(); \
-        _test_passed = true; \
-        func(##__VA_ARGS__); \
-        _REPORT_TEST_RESULT(__file, __line, #func); \
-        after_each(); \
+        /* Set report file */                   \
+        if (_cutl_report_file == NULL) {        \
+            _cutl_report_file = stdout;         \
+        }                                       \
+        else {                                  \
+            /* TODO : Change */                 \
+            _cutl_report_file = stdout;         \
+        }                                       \
+                                                \
+        /* Begin testing */                     \
+        _cutl_current_file = __FILE__;          \
+        _cutl_n_tests_passed = 0;               \
+        _cutl_n_tests_failed = 0;               \
+                                                \
+        _CUTL_REPORT_INFO("Testing " __FILE__); \
+                                                \
+        CUTL_BEFORE_ALL();                      \
     } while (0)
 
+
+
+/**
+ * Ends the testing mode
+ */
+#define CUTL_END_TEST() \
+    do { \
+        CUTL_AFTER_ALL(); \
+        _CUTL_REPORT_INFO( \
+            "Tests passed: %u / %u (%s)", \
+            _cutl_n_tests_passed, \
+            _cutl_n_tests_passed + _cutl_n_tests_failed, \
+            cutl_failed() ? "ERR" : "OK" \
+        ); \
+    } while (0)
+
+
+
+/**
+ * Tests a function and reports its result. The function must not
+ * return void, but can receive any amount of params.
+ * 
+ * If a failure ocurrs while the function is being executed, it will
+ * be reported and the executing function will be aborted.
+ * 
+ * If an error ocurrs while the function is being executed, it will
+ * be reported and the program will be aborted.
+ */
+#define CUTL_TEST_FUNCTION(func, ...) \
+    do { \
+        _cutl_current_func = #func;         \
+        _cutl_current_line = __LINE__;      \
+                                            \
+        CUTL_BEFORE_EACH();                 \
+                                            \
+        _cutl_test_status = _CUTL_SUCCESS;  \
+                                            \
+        func(##__VA_ARGS__);                \
+                                            \
+        _CUTL_REPORT_TEST_RESULT();         \
+                                            \
+        CUTL_AFTER_EACH();                  \
+    } while (0)
+
+
+
+/**
+ * Returns the number of failed tests
+ */
+int cutl_failed() {
+    return _cutl_n_tests_failed;
+}
 
 
 // ==========================================================================
 // ASSERTIONS
 // ==========================================================================
 
-#define TEST_BOOL   "%d"
-#define TEST_DOUBLE "%lf"
-#define TEST_FLOAT  "%f"
-#define TEST_INT8   "%d"
-#define TEST_INT16  "%d"
-#define TEST_INT32  "%d"
-#define TEST_INT64  "%ld"
-#define TEST_UINT8  "%u"
-#define TEST_UINT16 "%u"
-#define TEST_UINT32 "%u"
-#define TEST_UINT64 "%lu"
 
+// General assertions
 
-// Setup
-
-#define GLOB_SETUP_ASSERT(expr, msg, ...) \
-    if (!(expr)) _REPORT_GLOB_SETUP_ERROR(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-
-#define FUNC_SETUP_ASSERT(expr, msg, ...) \
-    if (!(expr)) _REPORT_FUNC_SETUP_ERROR(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
-
-
-
-// Tests
-
-#define ASSERT(expr) \
+#define CUTL_ASSERT(expr) \
     do { \
         if (!(expr)) { \
-            _REGISTER_FAILURE(__func__, __LINE__, "Expression " #expr " is false"); \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT( " #expr " )"); \
             return; \
         } \
     } while (0)
 
-#define ASSERT_EQ(v1, v2) \
+#define CUTL_ASSERT_EQ(v1, v2) \
     do { \
-        if (v1 != v2) { \
-            _REGISTER_FAILURE(__func__, __LINE__, "Expected " #v1 " == " #v2 " but they are different"); \
+        if ((v1) != (v2)) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_EQ( " #v1 ", " #v2 " )"); \
             return; \
         }  \
     }while (0)
 
-#define ASSERT_NEQ(v1, v2) \
+#define CUTL_ASSERT_NEQ(v1, v2) \
     do { \
-        if (v1 == v2) { \
-            _REGISTER_FAILURE(__func__, __LINE__, "Expected " #v2 " != " #v2 " but they are equal"); \
+        if ((v1) == (v2)) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_NEQ( " #v1 ", " #v2 " )"); \
             return; \
         } \
     } while (0)
 
-#define ASSERT_NULL(v1) \
+#define CUTL_ASSERT_NULL(v1) \
     do { \
-        if (v1 != NULL) { \
-            _REGISTER_FAILURE(__func__, __LINE__, "Expected " #v1 " to be NULL"); \
+        if ((v1) != NULL) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_NULL( " #v1 " )"); \
             return; \
         } \
     } while (0)
 
-#define ASSERT_NOT_NULL(v1) \
+#define CUTL_ASSERT_NOT_NULL(v1) \
     do { \
-        if (v1 == NULL) { \
-            _REGISTER_FAILURE(__func__, __LINE__, "Expected " #v1 " to be not NULL"); \
+        if ((v1) == NULL) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_NOT_NULL( " #v1 " )"); \
             return; \
         } \
     } while (0)
 
 
 
-#define ASSERT_EQ_INT(v1, v2) \
-    ASSERT_EQ(v1, v2)
+// (Specific type) Assert equal
 
-#define ASSERT_EQ_FLOAT(v1, v2) \
-    ASSERT_EQ(v1, v2)
-
-#define ASSERT_EQ_DOUBLE(v1, v2) \
-    ASSERT_EQ(v1, v2)
-
-#define ASSERT_EQ_BOOL(v1, v2) \
-    ASSERT_EQ(v1, v2)
-
-#define ASSERT_EQ_STR(v1, v2) \
+#define _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, type, macro_name) \
     do { \
-        if (strcmp(v1, v2)) { \
-            _REGISTER_FAILURE(__func__, __LINE__, "Expected " #v1 " == " #v2 " but they are different"); \
+        if ( ((type)(v1)) != ((type)(v2)) ) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, macro_name "( " #v1 ", " #v2 " )"); \
+            return; \
+        } \
+    } while (0)
+
+
+
+#define CUTL_ASSERT_EQ_UINT(v1, v2) \
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, unsigned long long, "ASSERT_EQ_UINT")
+
+
+#define CUTL_ASSERT_EQ_INT(v1, v2) \
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, long long, "ASSERT_EQ_IboolNT")
+
+
+#define CUTL_ASSERT_EQ_FLOAT(v1, v2) \
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, float, "ASSERT_EQ_FLOAT")
+
+
+#define CUTL_ASSERT_EQ_DOUBLE(v1, v2) \
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, double, "ASSERT_EQ_DOUBLE")
+
+
+#define CUTL_ASSERT_EQ_BOOL(v1, v2) \
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, bool, "ASSERT_EQ_BOOL")
+
+
+#define CUTL_ASSERT_EQ_CHAR(v1, v2) \
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, char, "ASSERT_EQ_CHAR")
+
+
+#define CUTL_ASSERT_EQ_STR(v1, v2) \
+    do { \
+        if (strcmp(v1, v2) != 0) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_EQ_STR( " #v1 ", " #v2 " )"); \
             return;\
         } \
     } while (0)
 
-#define ASSERT_EQ_PTR(v1, v2) \
-    ASSERT_EQ(v1, v2)
+
+#define CUTL_ASSERT_EQ_PTR(v1, v2) \
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, void *, "ASSERT_EQ_PTR")
 
 
 
-#define ASSERT_NEQ_INT(v1, v2) \
-    ASSERT_NEQ(v1, v2)
+// (Specific type) Assert distinct
 
-#define ASSERT_NEQ_FLOAT(v1, v2) \
-    ASSERT_NEQ(v1, v2)
-
-#define ASSERT_NEQ_DOUBLE(v1, v2) \
-    ASSERT_NEQ(v1, v2)
-
-#define ASSERT_NEQ_BOOL(v1, v2) \
-    ASSERT_NEQ(v1, v2)
-
-#define ASSERT_NEQ_STR(v1, v2) \
+#define _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, type, macro_name) \
     do { \
-        if (!strcmp(v1, v2)) { \
-            _REGISTER_FAILURE(__func__, __LINE__, "Expected " #v1 " == " #v2 " but they are different"); \
+        if ( ((type)(v1)) == ((type)(v2)) ) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, macro_name "( " #v1 ", " #v2 " )"); \
             return; \
         } \
     } while (0)
 
-#define ASSERT_NEQ_PTR(v1, v2) \
-    ASSERT_NEQ(v1, v2)
+
+
+#define CUTL_ASSERT_NEQ_UINT(v1, v2) \
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, unsigned long long, "ASSERT_NEQ_UINT")
+
+
+#define CUTL_ASSERT_NEQ_INT(v1, v2) \
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, long long, "ASSERT_NEQ_INT")
+
+
+#define CUTL_ASSERT_NEQ_FLOAT(v1, v2) \
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, float, "ASSERT_NEQ_FLOAT")
+
+
+#define CUTL_ASSERT_NEQ_DOUBLE(v1, v2) \
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, double, "ASSERT_NEQ_DOUBLE")
+
+
+#define CUTL_ASSERT_NEQ_BOOL(v1, v2) \
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, bool, "ASSERT_NEQ_BOOL")
+
+
+#define CUTL_ASSERT_NEQ_CHAR(v1, v2) \
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, char, "ASSERT_NEQ_CHAR")
+
+
+#define CUTL_ASSERT_NEQ_STR(v1, v2) \
+    do { \
+        if (strcmp(v1, v2) == 0) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_NEQ_STR( " #v1 ", " #v2 " )"); \
+            return;\
+        } \
+    } while (0)
+
+
+#define CUTL_ASSERT_NEQ_PTR(v1, v2) \
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, void *, "ASSERT_NEQ_ptr")
+
+
+
+
+#if defined(CUTL_NO_PREFIXED_ASSERTIONS)
+
+    #define ASSERT(expr)                CUTL_ASSERT(expr)
+    #define ASSERT_EQ(v1, v2)           CUTL_ASSERT_EQ(v1, v2)
+    #define ASSERT_NEQ(v1, v2)          CUTL_ASSERT_NEQ(v1, v2)
+    #define ASSERT_NULL(v1)             CUTL_ASSERT_NULL(v1)
+    #define ASSERT_NOT_NULL(v1)         CUTL_ASSERT_NOT_NULL(v1)
+
+    #define ASSERT_EQ_UINT(v1, v2)      CUTL_ASSERT_EQ_UINT(v1, v2)
+    #define ASSERT_EQ_INT(v1, v2)       CUTL_ASSERT_EQ_INT(v1, v2)
+    #define ASSERT_EQ_FLOAT(v1, v2)     CUTL_ASSERT_EQ_FLOAT(v1, v2)
+    #define ASSERT_EQ_DOUBLE(v1, v2)    CUTL_ASSERT_EQ_DOUBLE(v1, v2)
+    #define ASSERT_EQ_BOOL(v1, v2)      CUTL_ASSERT_EQ_BOOL(v1, v2)
+    #define ASSERT_EQ_CHAR(v1, v2)      CUTL_ASSERT_EQ_CHAR(v1, v2)
+    #define ASSERT_EQ_STR(v1, v2)       CUTL_ASSERT_EQ_STR(v1, v2)
+    #define ASSERT_EQ_PTR(v1, v2)       CUTL_ASSERT_EQ_PTR(v1, v2)
+
+    #define ASSERT_NEQ_UINT(v1, v2)     CUTL_ASSERT_NEQ_UINT(v1, v2)
+    #define ASSERT_NEQ_INT(v1, v2)      CUTL_ASSERT_NEQ_INT(v1, v2)
+    #define ASSERT_NEQ_FLOAT(v1, v2)    CUTL_ASSERT_NEQ_FLOAT(v1, v2)
+    #define ASSERT_NEQ_DOUBLE(v1, v2)   CUTL_ASSERT_NEQ_DOUBLE(v1, v2)
+    #define ASSERT_NEQ_BOOL(v1, v2)     CUTL_ASSERT_NEQ_BOOL(v1, v2)
+    #define ASSERT_NEQ_CHAR(v1, v2)     CUTL_ASSERT_NEQ_CHAR(v1, v2)
+    #define ASSERT_NEQ_STR(v1, v2)      CUTL_ASSERT_NEQ_STR(v1, v2)
+    #define ASSERT_NEQ_PTR(v1, v2)      CUTL_ASSERT_NEQ_PTR(v1, v2)
+
+#endif /* CUTL_NO_PREFIXED_ASSERTIONS */
+
 
 
 // ==========================================================================
-// MORE
+// ERRORS
 // ==========================================================================
 
-#define REPORT_ERROR(msg, ...) \
-    _ERROR("%s l:%d (%s): " msg, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
+#define CUTL_REPORT_ERROR(msg) \
+    do { \
+        _CUTL_REGISTER_TEST_ERROR(__LINE__, msg); \
+        return; \
+    } while (0)
 
 
 
-#endif /* TEST_IMPLEMENTATION */
 
-#endif /* TESTS_H */
+#endif /* CUTL_H */

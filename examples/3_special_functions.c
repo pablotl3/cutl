@@ -4,7 +4,7 @@
  * test
  * 
  * Date:    2025-09-03
- * Version: 2.0
+ * Version: 1.0
  */
 #include <stdio.h>
 #define CUTL_NO_PREFIXED_ASSERTIONS

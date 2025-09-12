@@ -1,6 +1,8 @@
 /**
  * Error handling with CutL
  * 
+ * Date:    2025-09-03
+ * Version: 1.0
  */
 #define CUTL_NO_PREFIXED_ASSERTIONS
 #include <cutl.h>

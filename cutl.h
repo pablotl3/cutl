@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 
-#define CUTL_VERSION    "3.1.1"
+#define CUTL_VERSION    "3.1.2"
 
 
 // The following methods MUST be implemented in the test file
@@ -572,7 +572,7 @@ int cutl_failed() {
 
 
 #define CUTL_ASSERT_NEQ_PTR(v1, v2) \
-    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, void *, "ASSERT_NEQ_ptr")
+    _CUTL_ASSERT_NEQ_SPECIFIC_TYPE(v1, v2, void *, "ASSERT_NEQ_PTR")
 
 
 

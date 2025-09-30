@@ -16,7 +16,7 @@
 #include <stdbool.h>
 
 
-#define CUTL_VERSION    "3.1"
+#define CUTL_VERSION    "3.1.1"
 
 
 // The following methods MUST be implemented in the test file
@@ -493,7 +493,7 @@ int cutl_failed() {
 
 
 #define CUTL_ASSERT_EQ_INT(v1, v2) \
-    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, long long, "ASSERT_EQ_IboolNT")
+    _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, long long, "ASSERT_EQ_INT")
 
 
 #define CUTL_ASSERT_EQ_FLOAT(v1, v2) \

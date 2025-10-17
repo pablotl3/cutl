@@ -1,9 +1,32 @@
-/**
- * Simple framework for tests
- * Author: @pablotl3 (GitHub)
- * Date:   21 november 2024
- * Version: 2.0
- */
+/***********************************************************************************
+ * CutL: A simple library for C unit tests.
+ * 
+ * Check GitHub repo: https://github.com/pablotl3/cutl
+ * 
+ * ------------------
+ *
+ * MIT LICENSE
+ * 
+ * Copyright (c) 2024-2025 @pablotl3
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ ***********************************************************************************/
 #ifndef CUTL_H
 #define CUTL_H
 
@@ -16,7 +39,29 @@
 #include <stdbool.h>
 
 
-#define CUTL_VERSION    "3.1.2"
+#define CUTL_VERSION    "3.2.0"
+
+
+
+// Mark CutL functions that may not be used as such. This helps reduce
+// compilation noise and allows the programmer to use '-Werror' without
+// triggering errors.
+//
+// The C23 standard provides the [[maybe_unused]] attribute (previously
+// introduced in C++17). For earlier standards, the only possible way
+// to achieve this is by using compiler-specific directives. Currently,
+// CutL supports GCC and clang's __attribute__((unused)).
+#if defined(__STDC_VERSION__) && __STDC_VERSION >= 202311L
+    #define __CUTL_UNUSED [[maybe_unused]]
+    #define __CUTL_DECL_UNUSED(declfunc) __CUTL_UNUSED declfunc
+#elif defined(__GNUC__) || defined(__clang__)
+    #define __CUTL_UNUSED __attribute__((unused))
+    #define __CUTL_DECL_UNUSED(declfunc) declfunc __CUTL_UNUSED
+#elif
+    #define __CUTL_UNUSED
+    #define __CUTL_DECL_UNUSED(declfunc) declfunc
+#endif
+
 
 
 // The following methods MUST be implemented in the test file
@@ -31,7 +76,7 @@ static void CUTL_AFTER_EACH();  // Executes after each test
 // Other CutL functions
 // --------------------
 
-static int  cutl_failed();       // Returns the number of failed tests
+__CUTL_DECL_UNUSED(static int  cutl_failed());    // Returns the number of failed tests
 
 
 // CutL macros
@@ -115,17 +160,17 @@ static FILE *_cutl_report_file = NULL;
 // Private functions declarations
 // ==========================================================================
 
-static void _CUTL_REPORT_SUCCESS(const char *msg, ...);
-static void _CUTL_REPORT_FAILURE(const char *msg, ...);
-static void _CUTL_REPORT_INFO(const char *msg, ...);
-static void _CUTL_REPORT_DEBUG(const char *msg, ...);
-static void _CUTL_REPORT_ERROR(const char *msg, ...);
+__CUTL_DECL_UNUSED(static void _CUTL_REPORT_SUCCESS(const char *msg, ...));
+__CUTL_DECL_UNUSED(static void _CUTL_REPORT_FAILURE(const char *msg, ...));
+__CUTL_DECL_UNUSED(static void _CUTL_REPORT_INFO(const char *msg, ...));
+__CUTL_DECL_UNUSED(static void _CUTL_REPORT_DEBUG(const char *msg, ...));
+__CUTL_DECL_UNUSED(static void _CUTL_REPORT_ERROR(const char *msg, ...));
 
 
-static void _CUTL_REGISTER_TEST_FAILURE(const int line, const char *msg);
-static void _CUTL_REGISTER_TEST_ERROR(const int line, const char *msg);
+__CUTL_DECL_UNUSED(static void _CUTL_REGISTER_TEST_FAILURE(const int line, const char *msg));
+__CUTL_DECL_UNUSED(static void _CUTL_REGISTER_TEST_ERROR(const int line, const char *msg));
 
-static void _CUTL_REPORT_TEST_RESULT(void);
+__CUTL_DECL_UNUSED(static void _CUTL_REPORT_TEST_RESULT(void));
 
 
 
@@ -151,7 +196,7 @@ static void _CUTL_REPORT_TEST_RESULT(void);
 /**
  * Reports successfull test
  */
-void _CUTL_REPORT_SUCCESS(const char *format, ...) {
+__CUTL_UNUSED void _CUTL_REPORT_SUCCESS(const char *format, ...) {
     va_list args;
 
     va_start(args, format);
@@ -174,7 +219,7 @@ void _CUTL_REPORT_SUCCESS(const char *format, ...) {
 /**
  * Reports failed test
  */
-void _CUTL_REPORT_FAILURE(const char *format, ...) {
+__CUTL_UNUSED void _CUTL_REPORT_FAILURE(const char *format, ...) {
     va_list args;
 
     va_start(args, format);
@@ -197,7 +242,7 @@ void _CUTL_REPORT_FAILURE(const char *format, ...) {
 /**
  * Reports some information
  */
-void _CUTL_REPORT_INFO(const char *format, ...) {
+__CUTL_UNUSED void _CUTL_REPORT_INFO(const char *format, ...) {
     va_list args;
 
     va_start(args, format);
@@ -220,7 +265,7 @@ void _CUTL_REPORT_INFO(const char *format, ...) {
 /**
  * Reports some debug information
  */
-void _CUTL_REPORT_DEBUG(const char *format, ...) {
+__CUTL_UNUSED void _CUTL_REPORT_DEBUG(const char *format, ...) {
     va_list args;
 
     va_start(args, format);
@@ -243,7 +288,7 @@ void _CUTL_REPORT_DEBUG(const char *format, ...) {
 /**
  * Reports an unexpected error (not test failure)
  */
-void _CUTL_REPORT_ERROR(const char *format, ...) {
+__CUTL_UNUSED void _CUTL_REPORT_ERROR(const char *format, ...) {
     va_list args;
 
     va_start(args, format);
@@ -422,7 +467,7 @@ void _CUTL_REPORT_TEST_RESULT() {
 /**
  * Returns the number of failed tests
  */
-int cutl_failed() {
+__CUTL_UNUSED int cutl_failed() {
     return _cutl_n_tests_failed;
 }
 

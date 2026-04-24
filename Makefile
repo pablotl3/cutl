@@ -25,6 +25,7 @@ run: $(BIN)
 	@-echo "\n" && ./bin/2_assertions
 	@-echo "\n" && ./bin/3_special_functions
 	@-echo "\n" && ./bin/4_error_handling
+	@-echo "\n" && ./bin/5_stop_at_failure
 
 
 clean:

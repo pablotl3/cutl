@@ -73,10 +73,19 @@ static void CUTL_BEFORE_EACH(); // Executes before each test
 static void CUTL_AFTER_EACH();  // Executes after each test
 
 
+// CuTL Configurations
+// -------------------
+
+#define CUTL_FLAG_STOP_AT_FAIL  0x00000001  // Stop execution upon test failure
+
+
+__CUTL_DECL_UNUSED(static void cutl_config(int flags));
+
+
 // Other CutL functions
 // --------------------
 
-__CUTL_DECL_UNUSED(static int  cutl_failed());    // Returns the number of failed tests
+__CUTL_DECL_UNUSED(static int  cutl_failed());          // Returns the number of failed tests
 
 
 // CutL macros
@@ -133,6 +142,10 @@ __CUTL_DECL_UNUSED(static int  cutl_failed());    // Returns the number of faile
 #define _CUTL_FAILURE 1
 #define _CUTL_ERROR   2
 
+// Configs
+
+static bool _cutl_stop_at_fail = false;
+
 // Control of test failures
 
 #define _CUTL_MAX_LEN_FUNC_NAME 128
@@ -172,6 +185,22 @@ __CUTL_DECL_UNUSED(static void _CUTL_REGISTER_TEST_ERROR(const int line, const c
 
 __CUTL_DECL_UNUSED(static void _CUTL_REPORT_TEST_RESULT(void));
 
+
+
+// ==========================================================================
+// Configs
+// ==========================================================================
+
+/**
+ * Sets CuTL configurations. The function receives a series of flags that can
+ * be combined with the OR operator. Current available flags are:
+ * 
+ *   - CUTL_FLAG_STOP_AT_FAIL : If provided, the execution will be aborted
+ *         upon test failure.
+ */
+static void cutl_config(int flags) {
+    _cutl_stop_at_fail = (bool)(flags & CUTL_FLAG_STOP_AT_FAIL);
+}
 
 
 
@@ -353,6 +382,11 @@ void _CUTL_REPORT_TEST_RESULT() {
                 _cutl_current_file, _cutl_current_line, _cutl_current_func,
                 _cutl_failure_line, _cutl_failure_msg
             );
+
+            if (_cutl_stop_at_fail) {
+                _CUTL_REPORT_INFO("Ending execution...");
+                exit(EXIT_FAILURE);
+            }
 
             break;
 

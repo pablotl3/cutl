@@ -39,7 +39,7 @@
 #include <stdbool.h>
 
 
-#define CUTL_VERSION    "3.2.0"
+#define CUTL_VERSION    "3.3.1"
 
 
 
@@ -51,13 +51,13 @@
 // introduced in C++17). For earlier standards, the only possible way
 // to achieve this is by using compiler-specific directives. Currently,
 // CutL supports GCC and clang's __attribute__((unused)).
-#if defined(__STDC_VERSION__) && __STDC_VERSION >= 202311L
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
     #define __CUTL_UNUSED [[maybe_unused]]
     #define __CUTL_DECL_UNUSED(declfunc) __CUTL_UNUSED declfunc
 #elif defined(__GNUC__) || defined(__clang__)
     #define __CUTL_UNUSED __attribute__((unused))
     #define __CUTL_DECL_UNUSED(declfunc) declfunc __CUTL_UNUSED
-#elif
+#else
     #define __CUTL_UNUSED
     #define __CUTL_DECL_UNUSED(declfunc) declfunc
 #endif

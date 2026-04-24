@@ -604,6 +604,16 @@ __CUTL_UNUSED int cutl_failed() {
     _CUTL_ASSERT_EQ_SPECIFIC_TYPE(v1, v2, void *, "ASSERT_EQ_PTR")
 
 
+#define CUTL_ASSERT_EQ_ARRAY(a1, a2, n, type) \
+    do { \
+        for (int __i = 0; __i < n; __i++) { \
+            if ( (type)a1[__i] != (type)a2[__i]) { \
+                _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_EQ_ARRAY( " #a1 ", " #a2 " )"); \
+            } \
+        } \
+    } while (0)
+
+
 
 // (Specific type) Assert distinct
 
@@ -672,6 +682,8 @@ __CUTL_UNUSED int cutl_failed() {
     #define ASSERT_EQ_CHAR(v1, v2)      CUTL_ASSERT_EQ_CHAR(v1, v2)
     #define ASSERT_EQ_STR(v1, v2)       CUTL_ASSERT_EQ_STR(v1, v2)
     #define ASSERT_EQ_PTR(v1, v2)       CUTL_ASSERT_EQ_PTR(v1, v2)
+
+    #define ASSERT_EQ_ARRAY(a1, a2, n, type)    CUTL_ASSERT_EQ_ARRAY(a1, a2, n, type)
 
     #define ASSERT_NEQ_UINT(v1, v2)     CUTL_ASSERT_NEQ_UINT(v1, v2)
     #define ASSERT_NEQ_INT(v1, v2)      CUTL_ASSERT_NEQ_INT(v1, v2)

@@ -1,8 +1,8 @@
 /**
  * Demonstration of how to use CutL assertions
  *
- * Date:    2025-09-03
- * Version: 2.0
+ * Date:    2026-04-26
+ * Version: 3.0
  */
 #define CUTL_NO_PREFIXED_ASSERTIONS
 #include <cutl.h>
@@ -20,7 +20,7 @@ void CUTL_AFTER_EACH()  {}
 static void test_general_assertions_success();
 static void test_typed_assertions_success();
 static void test_assertion_failure();
-
+static void test_assertion_array_eq();
 
 
 int main() {
@@ -29,6 +29,7 @@ int main() {
     CUTL_TEST_FUNCTION(test_general_assertions_success);
     CUTL_TEST_FUNCTION(test_typed_assertions_success);
     CUTL_TEST_FUNCTION(test_assertion_failure);
+    CUTL_TEST_FUNCTION(test_assertion_array_eq);
 
     CUTL_END_TEST();
 
@@ -90,7 +91,6 @@ void test_typed_assertions_success() {
 }
 
 
-
 /**
  * When an assertion fails, a failure is reported and the
  * function tested is inmediately ended.
@@ -98,4 +98,22 @@ void test_typed_assertions_success() {
 void test_assertion_failure() {
     ASSERT( 1 == 2 );
     ASSERT( 1 == 1 );
+}
+
+
+/**
+ * With CuTL you can check if two arrays are equal, that is, if
+ * all their elements are the same.
+ */
+void test_assertion_array_eq() {
+    int array1[] = { 1, 2, 3, 4, 5, 6 };
+    int array2[] = { 1, 2, 3, 4, 5, 6 };
+    int array3[] = { 6, 5, 4, 3, 2, 1 };
+    int array4[] = { 1, 2, 3, 4, 5, 0 };
+
+    int n = sizeof(array1) / sizeof(array1[0]);
+
+    ASSERT_EQ_ARRAY(array1, array2, n, int);    // Expected to PASS
+    ASSERT_EQ_ARRAY(array1, array3, n, int);    // Expected to FAIL
+    ASSERT_EQ_ARRAY(array1, array4, n, int);    // Expected to FAIL
 }

@@ -39,7 +39,7 @@
 #include <stdbool.h>
 
 
-#define CUTL_VERSION    "3.3.1"
+#define CUTL_VERSION    "3.4.0"
 
 
 
@@ -110,6 +110,8 @@ __CUTL_DECL_UNUSED(static int  cutl_failed());          // Returns the number of
 // macro  ASSERT_NEQ(v1, v2)
 // macro  ASSERT_NULL(v1)
 // macro  ASSERT_NOT_NULL(v1)
+// macro  ASSERT_TRUE(expr)
+// macro  ASSERT_FALSE(expr)
 
 // macro  ASSERT_EQ_UINT(v1, v2)
 // macro  ASSERT_EQ_INT(v1, v2)
@@ -119,6 +121,7 @@ __CUTL_DECL_UNUSED(static int  cutl_failed());          // Returns the number of
 // macro  ASSERT_EQ_CHAR(v1, v2)
 // macro  ASSERT_EQ_STR(v1, v2)
 // macro  ASSERT_EQ_PTR(v1, v2)
+// macro  ASSERT_EQ_ARRAY(a1, a2, n, type)
 
 // macro  ASSERT_NEQ_UINT(v1, v2)
 // macro  ASSERT_NEQ_INT(v1, v2)
@@ -553,6 +556,21 @@ __CUTL_UNUSED int cutl_failed() {
         } \
     } while (0)
 
+#define CUTL_ASSERT_TRUE(expr) \
+    do { \
+        if (!(expr)) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_TRUE( " #expr " )"); \
+            return; \
+        } \
+    } while (0)
+
+#define CUTL_ASSERT_FALSE(expr) \
+    do { \
+        if ((expr)) { \
+            _CUTL_REGISTER_TEST_FAILURE(__LINE__, "ASSERT_FALSE( " #expr " )"); \
+            return; \
+        } \
+    } while (0)
 
 
 // (Specific type) Assert equal
@@ -673,6 +691,8 @@ __CUTL_UNUSED int cutl_failed() {
     #define ASSERT_NEQ(v1, v2)          CUTL_ASSERT_NEQ(v1, v2)
     #define ASSERT_NULL(v1)             CUTL_ASSERT_NULL(v1)
     #define ASSERT_NOT_NULL(v1)         CUTL_ASSERT_NOT_NULL(v1)
+    #define ASSERT_TRUE(expr)           CUTL_ASSERT_TRUE(expr)
+    #define ASSERT_FALSE(expr)          CUTL_ASSERT_FALSE(expr)
 
     #define ASSERT_EQ_UINT(v1, v2)      CUTL_ASSERT_EQ_UINT(v1, v2)
     #define ASSERT_EQ_INT(v1, v2)       CUTL_ASSERT_EQ_INT(v1, v2)

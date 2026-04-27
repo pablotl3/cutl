@@ -2,7 +2,7 @@
  * Demonstration of how to use CutL assertions
  *
  * Date:    2026-04-26
- * Version: 3.0
+ * Version: 4.0
  */
 #define CUTL_NO_PREFIXED_ASSERTIONS
 #include <cutl.h>
@@ -56,6 +56,21 @@ void test_general_assertions_success() {
 
     ASSERT_NULL(null_ptr);
     ASSERT_NOT_NULL(valid_ptr);
+
+    ASSERT_TRUE(1);
+    ASSERT_TRUE(2);
+    ASSERT_TRUE(-1);
+    ASSERT_TRUE(-2);
+    ASSERT_TRUE(true);
+    ASSERT_TRUE(0 == 0);
+    ASSERT_TRUE(1 == 1);
+    ASSERT_TRUE(0 != 1);
+
+    ASSERT_FALSE(0);
+    ASSERT_FALSE(false);
+    ASSERT_FALSE(0 == 1);
+    ASSERT_FALSE(1 == 0);
+    ASSERT_FALSE(0 != 0);
 }
 
 
